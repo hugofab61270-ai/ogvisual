@@ -1,0 +1,56 @@
+-- Secret -> OG avec mise à jour automatique
+
+local function applyOG(obj)
+
+    if obj:IsA("TextLabel") or obj:IsA("TextButton") then
+        
+        if obj.Text and string.find(obj.Text,"Secret") then
+            
+            obj.Text = obj.Text:gsub("Secret","OG")
+
+            obj.TextColor3 = Color3.fromRGB(255,230,0)
+
+            -- éviter de recréer plusieurs effets
+            if not obj:FindFirstChild("OGStroke") then
+                
+                local stroke = Instance.new("UIStroke")
+                stroke.Name = "OGStroke"
+                stroke.Color = Color3.fromRGB(170,120,0)
+                stroke.Thickness = 3
+                stroke.Parent = obj
+
+                local gradient = Instance.new("UIGradient")
+                gradient.Name = "OGGradient"
+                gradient.Color = ColorSequence.new{
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(255,200,0)),
+                    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255,255,120)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(200,150,0))
+                }
+                gradient.Rotation = 90
+                gradient.Parent = obj
+
+                task.spawn(function()
+                    while obj.Parent do
+                        for i = -1,1,0.03 do
+                            gradient.Offset = Vector2.new(0,i)
+                            task.wait(0.03)
+                        end
+                    end
+                end)
+
+            end
+        end
+        
+    end
+end
+
+-- scan initial
+for _,v in pairs(game:GetDescendants()) do
+    applyOG(v)
+end
+
+-- mise à jour automatique quand le jeu crée de nouveaux textes
+game.DescendantAdded:Connect(function(v)
+    task.wait(0.1)
+    applyOG(v)
+end)
